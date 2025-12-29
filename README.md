@@ -1,130 +1,70 @@
-# Telegram Bot "Clubs and Products"
+# Telegram-бот кружков и товаров
 
-This Telegram bot allows users to choose interests, get club and product recommendations, leave and view reviews, and manage their registrations. The bot also includes an admin panel for managing clubs, reviews, and products.
+## Описание
 
----
+Telegram-бот на **Python** с использованием **pyTelegramBotAPI (telebot)** и **PostgreSQL**.
+Функционал:
 
-## Features
-
-### For Users:
-- Registration via phone number.
-- Selecting skill level (Beginner, Advanced, Pro).
-- Choosing and viewing interests.
-- Receiving recommendations for clubs and products based on interests.
-- Leaving and viewing reviews for clubs.
-- Viewing registrations for clubs.
-- Searching for clubs and products.
-
-### For Administrators:
-- Adding and removing clubs.
-- Deleting reviews.
-- Adding and removing products.
+* регистрация пользователей по номеру телефона;
+* выбор уровня подготовки и интересов;
+* рекомендации клубов и товаров;
+* отзывы и рейтинги клубов;
+* поиск по клубам и товарам;
+* админ-панель (управление клубами, товарами, отзывами).
 
 ---
 
-## Requirements
+## Требования
 
-- Python 3.8+
-- PostgreSQL
-- Python packages:
-  ```
-  pip install pyTelegramBotAPI psycopg2
-  ```
+* Python **3.9+**
+* PostgreSQL **13+**
+* Telegram Bot Token (через @BotFather)
 
 ---
 
-## Database Setup
+## Установка зависимостей
 
-1. Create a PostgreSQL database:
-
-```sql
-CREATE DATABASE postgres;
-```
-
-2. Create necessary tables:
-
-```sql
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    telegram_id BIGINT UNIQUE,
-    first_name TEXT,
-    username TEXT,
-    phone TEXT,
-    level TEXT
-);
-
-CREATE TABLE admins (
-    id SERIAL PRIMARY KEY,
-    telegram_id BIGINT UNIQUE
-);
-
-CREATE TABLE interests (
-    id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE
-);
-
-CREATE TABLE user_interests (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    interest_id INT REFERENCES interests(id),
-    telegram_id BIGINT,
-    UNIQUE(user_id, interest_id)
-);
-
-CREATE TABLE clubs (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-    category TEXT,
-    description TEXT,
-    schedule TEXT,
-    price TEXT,
-    level TEXT,
-    instructor TEXT,
-    address TEXT
-);
-
-CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-    category TEXT,
-    club_category TEXT,
-    price TEXT,
-    description TEXT
-);
-
-CREATE TABLE reviews (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    club_id INT REFERENCES clubs(id),
-    rating INT,
-    comment TEXT,
-    created_at TIMESTAMP,
-    status TEXT
-);
-
-CREATE TABLE club_registrations (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    club_id INT REFERENCES clubs(id),
-    selected_time TIMESTAMP,
-    status TEXT
-);
+```bash
+pip install pyTelegramBotAPI psycopg2-binary
 ```
 
 ---
 
-## Bot Setup
+## Настройка базы данных
 
-1. Obtain a bot token from [BotFather](https://t.me/BotFather).
-2. Replace the token in `bot.py`:
+⚠️ **Создавать базу данных вручную не требуется.**
+
+База данных уже подготовлена и прилагается в файле **`baza.backup`**.
+
+### Восстановление базы данных из backup
+
+1. Убедитесь, что PostgreSQL запущен.
+
+2. Создайте пустую базу данных (только оболочка):
+
+```bash
+createdb -U postgres postgres
+```
+
+3. Восстановите базу из файла `baza.backup`:
+
+```bash
+pg_restore -U postgres -d postgres baza.backup
+```
+
+4. При необходимости введите пароль пользователя PostgreSQL.
+
+После восстановления все таблицы, данные, интересы и администраторы будут доступны автоматически.
+
+---
+
+## Настройка бота
+
+В файле `main.py` укажите:
 
 ```python
-bot = telebot.TeleBot('YOUR_TOKEN')
-```
+bot = telebot.TeleBot('ВАШ_BOT_TOKEN')
 
-3. Configure PostgreSQL connection:
-
-```python
 conn = psycopg2.connect(
     dbname="postgres",
     user="postgres",
@@ -136,39 +76,45 @@ conn = psycopg2.connect(
 
 ---
 
-## Running the Bot
-
-Run the bot with:
+## Запуск
 
 ```bash
-python bot.py
+python main.py
 ```
 
-The bot will start polling and handle messages continuously.
+После запуска бот начнёт polling и будет готов к работе.
 
 ---
 
-## Admin Panel
+## Команды бота
 
-- Command `/adm` checks if the user is an admin.
-- Admins can:
-  - Add or remove clubs.
-  - Delete reviews.
-  - Add or remove products.
+* `/start` — запуск и регистрация пользователя
+* `/adm` — вход в админ-меню (только для администраторов)
 
 ---
 
-## Notes
+## Админ-функции
 
-- Pagination is implemented for selecting interests.
-- Reviews check for rating input between 1 and 5.
-- Recommendations are generated based on user interests.
-- Search works for both clubs and products.
+* добавление и удаление клубов;
+* добавление и удаление товаров;
+* удаление отзывов.
 
 ---
 
-## Libraries
+## Примечания
 
-- [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) for Telegram bot functionality.
-- [psycopg2](https://www.psycopg.org/) for PostgreSQL connection.
+* Для продакшена рекомендуется:
+
+  * хранить токен в `.env` файле;
+  * использовать отдельного пользователя PostgreSQL;
+  * включить логирование и обработку ошибок.
+
+---
+
+## Автор
+
+Проект для учебных и демонстрационных целей 🚀
+
+
+
 
